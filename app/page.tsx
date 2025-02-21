@@ -16,6 +16,7 @@ export default function Home() {
       method: "POST",
       body: JSON.stringify(result),
     });
+
     const data = await response.json();
     if (data.success) {
       console.log("User verified");
