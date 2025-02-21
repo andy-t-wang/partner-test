@@ -55,7 +55,7 @@ export default function Home() {
           action="razer-test" // Staging Dev Portal
           onSuccess={onSuccess}
           verification_level={verificationLevel}
-          partner={false}
+          partner={true}
         >
           {({ open }) => (
             <button
