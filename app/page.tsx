@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 // Define VerificationLevel enum since we're no longer importing it
 enum VerificationLevel {
   Orb = "orb",
   Device = "device",
   Document = "document",
-  SecureDocument = "secure_document"
+  SecureDocument = "secure_document",
 }
 
 // Define the interface for the success result
@@ -59,31 +59,16 @@ export default function Home() {
   );
   const idkitContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Add the script to the document
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/andy-idkit-standalone@1.4.4/build/index.global.js';
-    script.async = true;
-    script.onload = initializeIDKit;
-
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  const initializeIDKit = () => {
+  const initializeIDKit = useCallback(() => {
     if (window.IDKit && idkitContainerRef.current) {
       try {
         window.IDKit.init({
-          signal: 'test_signal',
-          app_id: 'app_staging_4cf2b038f87e0ebdf328ac3b60ded270',
-          action: 'razer-test',
-          action_description: 'Verify with World ID',
+          signal: "test_signal",
+          app_id: "app_staging_4cf2b038f87e0ebdf328ac3b60ded270",
+          action: "razer-test",
+          action_description: "Verify with World ID",
           show_modal: false,
-          container_id: 'idkit-container',
+          container_id: "idkit-container",
           partner: true,
           verification_level: verificationLevel.toString().toLowerCase(),
           handleVerify: (response: IDKitVerifyResponse) => {
@@ -97,7 +82,23 @@ export default function Home() {
         console.error("Error initializing IDKit:", error);
       }
     }
-  };
+  }, [verificationLevel]);
+
+  useEffect(() => {
+    // Add the script to the document
+    const script = document.createElement("script");
+    script.src =
+      "https://unpkg.com/andy-idkit-standalone@1.4.4/build/index.global.js";
+    script.async = true;
+    script.onload = initializeIDKit;
+
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup
+      document.body.removeChild(script);
+    };
+  }, [initializeIDKit]);
 
   // Re-initialize IDKit when verification level changes
   useEffect(() => {
@@ -122,7 +123,10 @@ export default function Home() {
         alert("Proof not verified");
       }
     } catch (error) {
-      console.error("Verification error:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "Verification error:",
+        error instanceof Error ? error.message : String(error)
+      );
       alert("Error during verification");
     }
   };
