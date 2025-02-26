@@ -116,10 +116,6 @@ export default function Home() {
           >
             <option value={VerificationLevel.Orb}>Orb</option>
             <option value={VerificationLevel.Device}>Device</option>
-            <option value={VerificationLevel.Document}>Document</option>
-            <option value={VerificationLevel.SecureDocument}>
-              Secure Document
-            </option>
           </select>
         </div>
 
