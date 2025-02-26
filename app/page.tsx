@@ -19,9 +19,37 @@ interface ISuccessResult {
   action: string;
 }
 
+// Define IDKit types to avoid using 'any'
+interface IDKitVerifyResponse {
+  proof: string;
+  merkle_root: string;
+  nullifier_hash: string;
+  verification_level: string;
+  action: string;
+  signal?: string;
+}
+
+interface IDKitInstance {
+  init: (config: IDKitConfig) => void;
+  open: () => void;
+}
+
+interface IDKitConfig {
+  signal: string;
+  app_id: string;
+  action: string;
+  action_description: string;
+  show_modal: boolean;
+  container_id: string;
+  partner: boolean;
+  verification_level: string;
+  handleVerify: (response: IDKitVerifyResponse) => boolean | Promise<boolean>;
+  onSuccess: (result: ISuccessResult) => void;
+}
+
 declare global {
   interface Window {
-    IDKit: any;
+    IDKit: IDKitInstance;
   }
 }
 
@@ -58,7 +86,7 @@ export default function Home() {
           container_id: 'idkit-container',
           partner: true,
           verification_level: verificationLevel.toString().toLowerCase(),
-          handleVerify: (response: any) => {
+          handleVerify: (response: IDKitVerifyResponse) => {
             // verify the IDKit proof, throw an error to show the error screen
             console.log("Verifying:", response);
             return true; // Return true to proceed with success, or throw an error to show error screen
@@ -94,7 +122,7 @@ export default function Home() {
         alert("Proof not verified");
       }
     } catch (error) {
-      console.error("Verification error:", error);
+      console.error("Verification error:", error instanceof Error ? error.message : String(error));
       alert("Error during verification");
     }
   };

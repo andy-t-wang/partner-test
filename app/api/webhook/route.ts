@@ -33,15 +33,15 @@ F7F1pIA0385/RvWTnmYiyMza
 -----END PRIVATE KEY-----`;
 
 // The corresponding public key that would be shared with the webhook sender
-export const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwBH8nyW6r4jur78QjJUm
-5uStbVO2Wro3XvrllqKDkszOEHRQk1e2qRIt6bSACnQqTP4GUQBNAmCoqA1D85a6
-Vu12g6bL/5lwovaHqhYn0+syXcVnp1UR4lW3TWAc6F65/avbQ4YBY0m6dfydpYvF
-mLV1r7GL9SKIeRYit4CViuEM6B4kHRRkegao9PExThLqdAKsQsXF//TXHbnXrkbI
-0UMfsvRQU1pcMcQ2031FH0Hyt6ADnE8NeSnLYIJBPBOpJfufM1MGBshC8JQztNy2
-TRQnNW072AG9/5ceaI7n65cso9msnSHhOINsaY8qKv64AIyKipxgRD7MtXTFc2DX
-sQIDAQAB
------END PUBLIC KEY-----`;
+// const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+// MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwBH8nyW6r4jur78QjJUm
+// 5uStbVO2Wro3XvrllqKDkszOEHRQk1e2qRIt6bSACnQqTP4GUQBNAmCoqA1D85a6
+// Vu12g6bL/5lwovaHqhYn0+syXcVnp1UR4lW3TWAc6F65/avbQ4YBY0m6dfydpYvF
+// mLV1r7GL9SKIeRYit4CViuEM6B4kHRRkegao9PExThLqdAKsQsXF//TXHbnXrkbI
+// 0UMfsvRQU1pcMcQ2031FH0Hyt6ADnE8NeSnLYIJBPBOpJfufM1MGBshC8JQztNy2
+// TRQnNW072AG9/5ceaI7n65cso9msnSHhOINsaY8qKv64AIyKipxgRD7MtXTFc2DX
+// sQIDAQAB
+// -----END PUBLIC KEY-----`;
 
 export async function POST(req: Request) {
     const contentType = req.headers.get('content-type');
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         // Decrypt the data with the private key
         const decryptedBuffer = crypto.privateDecrypt(
             {
-                key: PRIVATE_KEY,
+                key: privateKey,
                 padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
                 oaepHash: 'sha256',
             },
