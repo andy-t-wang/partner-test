@@ -55,7 +55,7 @@ declare global {
 
 export default function Home() {
   const [verificationLevel, setVerificationLevel] = useState<VerificationLevel>(
-    VerificationLevel.Orb
+    VerificationLevel.Device
   );
   const idkitContainerRef = useRef<HTMLDivElement>(null);
 
