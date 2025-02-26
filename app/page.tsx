@@ -51,8 +51,8 @@ export default function Home() {
       try {
         window.IDKit.init({
           signal: 'test_signal',
-          app_id: 'app_staging_4cf2b038f87e0ebdf328ac3b60ded270', // Keeping your current app_id
-          action: 'razer-test', // Keeping your current action
+          app_id: 'app_staging_4cf2b038f87e0ebdf328ac3b60ded270',
+          action: 'razer-test',
           action_description: 'Verify with World ID',
           show_modal: false,
           container_id: 'idkit-container',
