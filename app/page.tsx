@@ -19,7 +19,7 @@ interface ISuccessResult {
   action: string;
 }
 
-// Define IDKit types to avoid using 'any'
+// Define IDKit types
 interface IDKitVerifyResponse {
   proof: string;
   merkle_root: string;
