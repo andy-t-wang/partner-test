@@ -43,6 +43,42 @@ F7F1pIA0385/RvWTnmYiyMza
 // sQIDAQAB
 // -----END PUBLIC KEY-----`;
 
+const logger = {
+    info: (message: string, data?: any) => {
+        const logEntry = {
+            level: 'info',
+            timestamp: new Date().toISOString(),
+            message,
+            ...(data && { data }),
+        };
+        console.log(JSON.stringify(logEntry));
+    },
+    error: (message: string, error?: any) => {
+        const logEntry = {
+            level: 'error',
+            timestamp: new Date().toISOString(),
+            message,
+            ...(error && {
+                error: {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                }
+            }),
+        };
+        console.error(JSON.stringify(logEntry));
+    },
+    warn: (message: string, data?: any) => {
+        const logEntry = {
+            level: 'warn',
+            timestamp: new Date().toISOString(),
+            message,
+            ...(data && { data }),
+        };
+        console.warn(JSON.stringify(logEntry));
+    },
+};
+
 class WebhookPayload {
     public encryptedKey: string;
     public iv: string;
@@ -58,62 +94,83 @@ class WebhookPayload {
 }
 
 export async function POST(req: Request) {
+    logger.info('Webhook request received', {
+        method: req.method,
+        url: req.url,
+        headers: Object.fromEntries(req.headers.entries()),
+    });
+
     const contentType = req.headers.get('content-type');
     if (contentType !== 'application/json') {
+        logger.warn('Invalid content type received', { contentType });
         return NextResponse.json({ error: 'Invalid content type. Expected application/json' }, { status: 400 });
     }
 
     try {
-        const decryptData = (encryptedData: WebhookPayload, privKey: string): string => {
-            // The data is expected to have Base64-encoded fields:
-            const { encryptedKey, iv, authTag, ciphertext } = encryptedData;
-
-            // Convert the Base64 strings to Buffers
-            const encryptedKeyBuffer = Buffer.from(encryptedKey, 'base64');
-            const ivBuffer = Buffer.from(iv, 'base64');
-            const authTagBuffer = Buffer.from(authTag, 'base64');
-            const ciphertextBuffer = Buffer.from(ciphertext, 'base64');
-
-            // Create a private key object from the PEM
-            const privateKey = crypto.createPrivateKey({
-                key: privKey,
-                format: 'pem',
-            });
-
-            // Step 1: Decrypt the symmetric key using RSA
-            const symmetricKey = crypto.privateDecrypt(
-                {
-                    key: privateKey,
-                    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-                    oaepHash: 'sha256',
-                },
-                encryptedKeyBuffer,
-            );
-
-            // Step 2: Decrypt the ciphertext using AES-256-GCM
-            const decipher = crypto.createDecipheriv(
-                'aes-256-gcm',
-                symmetricKey,
-                ivBuffer,
-            );
-            // Set the authentication tag for GCM mode
-            decipher.setAuthTag(authTagBuffer);
-
-            let decrypted = decipher.update(ciphertextBuffer, undefined, 'utf8');
-            decrypted += decipher.final('utf8');
-            return decrypted;
-        };
         const encrypted = await req.json() as WebhookPayload;
+
+        // Log encrypted payload structure (without sensitive data)
+        logger.info('Encrypted payload received', {
+            hasEncryptedKey: !!encrypted.encryptedKey,
+            hasIv: !!encrypted.iv,
+            hasAuthTag: !!encrypted.authTag,
+            hasCiphertext: !!encrypted.ciphertext
+        });
+
         const decrypted = decryptData(encrypted, PRIVATE_KEY);
         const result = JSON.parse(decrypted);
 
-        // Log the JSON to the console
-        console.log('Decrypted webhook payload:', result);
+        logger.info('Webhook payload processed successfully', { payload: result });
 
         // Return a success response
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Error processing webhook:', error);
+    } catch (error: any) {
+        logger.error('Error processing webhook', error);
         return NextResponse.json({ error: 'Failed to process webhook payload' }, { status: 500 });
     }
 } 
+
+// Helper function to decrypt webhook payload
+function decryptData(encryptedData: WebhookPayload, privKey: string): string {
+    logger.info('Decrypting webhook payload');
+
+    // The data is expected to have Base64-encoded fields:
+    const { encryptedKey, iv, authTag, ciphertext } = encryptedData;
+
+    // Convert the Base64 strings to Buffers
+    const encryptedKeyBuffer = Buffer.from(encryptedKey, 'base64');
+    const ivBuffer = Buffer.from(iv, 'base64');
+    const authTagBuffer = Buffer.from(authTag, 'base64');
+    const ciphertextBuffer = Buffer.from(ciphertext, 'base64');
+
+    // Create a private key object from the PEM
+    const privateKey = crypto.createPrivateKey({
+        key: privKey,
+        format: 'pem',
+    });
+
+    // Step 1: Decrypt the symmetric key using RSA
+    const symmetricKey = crypto.privateDecrypt(
+        {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256',
+        },
+        encryptedKeyBuffer,
+    );
+
+    // Step 2: Decrypt the ciphertext using AES-256-GCM
+    const decipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        symmetricKey,
+        ivBuffer,
+    );
+    // Set the authentication tag for GCM mode
+    decipher.setAuthTag(authTagBuffer);
+
+    let decrypted = decipher.update(ciphertextBuffer, undefined, 'utf8');
+    decrypted += decipher.final('utf8');
+
+    logger.info('Webhook payload successfully decrypted');
+    return decrypted;
+}
