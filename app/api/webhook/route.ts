@@ -43,37 +43,72 @@ F7F1pIA0385/RvWTnmYiyMza
 // sQIDAQAB
 // -----END PUBLIC KEY-----`;
 
+class WebhookPayload {
+    public encryptedKey: string;
+    public iv: string;
+    public authTag: string;
+    public ciphertext: string;
+
+    public constructor(encryptedKey: string, iv: string, authTag: string, ciphertext: string) {
+        this.encryptedKey = encryptedKey;
+        this.iv = iv;
+        this.authTag = authTag;
+        this.ciphertext = ciphertext;
+    }
+}
+
 export async function POST(req: Request) {
     const contentType = req.headers.get('content-type');
-    if (contentType !== 'application/octet-stream') {
-        return NextResponse.json({ error: 'Invalid content type. Expected application/octet-stream' }, { status: 400 });
+    if (contentType !== 'application/json') {
+        return NextResponse.json({ error: 'Invalid content type. Expected application/json' }, { status: 400 });
     }
 
     try {
-        // Get the encrypted buffer from the request
-        const encryptedBuffer = await req.arrayBuffer();
+        const decryptData = (encryptedData: WebhookPayload, privKey: string): string => {
+            // The data is expected to have Base64-encoded fields:
+            const { encryptedKey, iv, authTag, ciphertext } = encryptedData;
 
-        // Create a private key object from the PEM
-        const privateKey = crypto.createPrivateKey({
-            key: PRIVATE_KEY,
-            format: 'pem',
-        });
+            // Convert the Base64 strings to Buffers
+            const encryptedKeyBuffer = Buffer.from(encryptedKey, 'base64');
+            const ivBuffer = Buffer.from(iv, 'base64');
+            const authTagBuffer = Buffer.from(authTag, 'base64');
+            const ciphertextBuffer = Buffer.from(ciphertext, 'base64');
 
-        // Decrypt the data with the private key
-        const decryptedBuffer = crypto.privateDecrypt(
-            {
-                key: privateKey,
-                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-                oaepHash: 'sha256',
-            },
-            Buffer.from(encryptedBuffer)
-        );
+            // Create a private key object from the PEM
+            const privateKey = crypto.createPrivateKey({
+                key: privKey,
+                format: 'pem',
+            });
 
-        // Parse the decrypted data as JSON
-        const decryptedJson = JSON.parse(decryptedBuffer.toString('utf8'));
+            // Step 1: Decrypt the symmetric key using RSA
+            const symmetricKey = crypto.privateDecrypt(
+                {
+                    key: privateKey,
+                    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+                    oaepHash: 'sha256',
+                },
+                encryptedKeyBuffer,
+            );
+
+            // Step 2: Decrypt the ciphertext using AES-256-GCM
+            const decipher = crypto.createDecipheriv(
+                'aes-256-gcm',
+                symmetricKey,
+                ivBuffer,
+            );
+            // Set the authentication tag for GCM mode
+            decipher.setAuthTag(authTagBuffer);
+
+            let decrypted = decipher.update(ciphertextBuffer, undefined, 'utf8');
+            decrypted += decipher.final('utf8');
+            return decrypted;
+        };
+        const encrypted = await req.json() as WebhookPayload;
+        const decrypted = decryptData(encrypted, PRIVATE_KEY);
+        const result = JSON.parse(decrypted);
 
         // Log the JSON to the console
-        console.log('Decrypted webhook payload:', decryptedJson);
+        console.log('Decrypted webhook payload:', result);
 
         // Return a success response
         return NextResponse.json({ success: true });
