@@ -43,7 +43,6 @@ F7F1pIA0385/RvWTnmYiyMza
 // sQIDAQAB
 // -----END PUBLIC KEY-----`;
 
-// Enhanced logger for Vercel logs
 const logger = {
     info: (message: string, data?: any) => {
         const logEntry = {
@@ -94,6 +93,43 @@ class WebhookPayload {
     }
 }
 
+export async function POST(req: Request) {
+    logger.info('Webhook request received', {
+        method: req.method,
+        url: req.url,
+        headers: Object.fromEntries(req.headers.entries()),
+    });
+
+    const contentType = req.headers.get('content-type');
+    if (contentType !== 'application/json') {
+        logger.warn('Invalid content type received', { contentType });
+        return NextResponse.json({ error: 'Invalid content type. Expected application/json' }, { status: 400 });
+    }
+
+    try {
+        const encrypted = await req.json() as WebhookPayload;
+
+        // Log encrypted payload structure (without sensitive data)
+        logger.info('Encrypted payload received', {
+            hasEncryptedKey: !!encrypted.encryptedKey,
+            hasIv: !!encrypted.iv,
+            hasAuthTag: !!encrypted.authTag,
+            hasCiphertext: !!encrypted.ciphertext
+        });
+
+        const decrypted = decryptData(encrypted, PRIVATE_KEY);
+        const result = JSON.parse(decrypted);
+
+        logger.info('Webhook payload processed successfully', { payload: result });
+
+        // Return a success response
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        logger.error('Error processing webhook', error);
+        return NextResponse.json({ error: 'Failed to process webhook payload' }, { status: 500 });
+    }
+} 
+
 // Helper function to decrypt webhook payload
 function decryptData(encryptedData: WebhookPayload, privKey: string): string {
     logger.info('Decrypting webhook payload');
@@ -138,56 +174,3 @@ function decryptData(encryptedData: WebhookPayload, privKey: string): string {
     logger.info('Webhook payload successfully decrypted');
     return decrypted;
 }
-
-// Helper function to sanitize sensitive data from logs if needed
-function sanitizePayload(payload: any): any {
-    // Create a deep copy to avoid modifying the original
-    const sanitized = JSON.parse(JSON.stringify(payload));
-
-    // Example: Redact sensitive fields if they exist
-    // This is just an example - modify according to your actual payload structure
-    if (sanitized.creditCard) sanitized.creditCard = '[REDACTED]';
-    if (sanitized.password) sanitized.password = '[REDACTED]';
-    if (sanitized.token) sanitized.token = '[REDACTED]';
-
-    return sanitized;
-}
-
-export async function POST(req: Request) {
-    logger.info('Webhook request received', {
-        method: req.method,
-        url: req.url,
-        headers: Object.fromEntries(req.headers.entries()),
-    });
-
-    const contentType = req.headers.get('content-type');
-    if (contentType !== 'application/json') {
-        logger.warn('Invalid content type received', { contentType });
-        return NextResponse.json({ error: 'Invalid content type. Expected application/json' }, { status: 400 });
-    }
-
-    try {
-        const encrypted = await req.json() as WebhookPayload;
-
-        // Log encrypted payload structure (without sensitive data)
-        logger.info('Encrypted payload received', {
-            hasEncryptedKey: !!encrypted.encryptedKey,
-            hasIv: !!encrypted.iv,
-            hasAuthTag: !!encrypted.authTag,
-            hasCiphertext: !!encrypted.ciphertext
-        });
-
-        const decrypted = decryptData(encrypted, PRIVATE_KEY);
-        const result = JSON.parse(decrypted);
-
-        // Log the decrypted payload with sensitive data redacted if needed
-        const sanitizedResult = sanitizePayload(result);
-        logger.info('Webhook payload processed successfully', { payload: sanitizedResult });
-
-        // Return a success response
-        return NextResponse.json({ success: true });
-    } catch (error: any) {
-        logger.error('Error processing webhook', error);
-        return NextResponse.json({ error: 'Failed to process webhook payload' }, { status: 500 });
-    }
-} 
