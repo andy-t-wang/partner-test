@@ -84,28 +84,10 @@ export default function Home() {
     }
   }, [verificationLevel]);
 
+  // Initialize IDKit when component mounts and when verification level changes
   useEffect(() => {
-    // Add the script to the document
-    const script = document.createElement("script");
-    script.src =
-      "https://unpkg.com/andy-idkit-standalone@1.4.4/build/index.global.js";
-    script.async = true;
-    script.onload = initializeIDKit;
-
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup
-      document.body.removeChild(script);
-    };
+    initializeIDKit();
   }, [initializeIDKit]);
-
-  // Re-initialize IDKit when verification level changes
-  useEffect(() => {
-    if (window.IDKit) {
-      initializeIDKit();
-    }
-  }, [verificationLevel]);
 
   const onSuccess = async (result: ISuccessResult) => {
     try {
@@ -153,7 +135,7 @@ export default function Home() {
 
         {/* Replace IDKitWidget with a container div for the standalone IDKit */}
         <div className="flex flex-col items-center">
-          <div id="idkit-container" ref={idkitContainerRef}></div>
+          <div id="idkit-container" ref={idkitContainerRef} />
 
           {/* Adding a manual button in case automatic initialization doesn't work */}
           <button
