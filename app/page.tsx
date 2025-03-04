@@ -67,7 +67,7 @@ export default function Home() {
           app_id: "app_staging_4cf2b038f87e0ebdf328ac3b60ded270",
           action: "razer-test",
           action_description: "Verify with World ID",
-          show_modal: false,
+          show_modal: true,
           container_id: "idkit-container",
           partner: true,
           verification_level: verificationLevel.toString().toLowerCase(),
@@ -114,42 +114,52 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <div className="flex flex-col gap-4">
-          <label htmlFor="verification-level" className="text-sm font-medium">
-            Verification Level:
-          </label>
-          <select
-            id="verification-level"
-            className="border rounded p-2"
-            value={verificationLevel}
-            onChange={(e) =>
-              setVerificationLevel(e.target.value as VerificationLevel)
-            }
-          >
-            <option value={VerificationLevel.Orb}>Orb</option>
-            <option value={VerificationLevel.Device}>Device</option>
-          </select>
-        </div>
+        <div className="razer-container p-8 rounded-lg w-full max-w-md">
+          <div className="flex flex-col gap-6">
+            <h1 className="text-2xl font-bold text-center mb-6 text-[--razer-green]">
+              Razer IDKit Demo
+            </h1>
 
-        {/* Replace IDKitWidget with a container div for the standalone IDKit */}
-        <div className="flex flex-col items-center">
-          <div id="idkit-container" ref={idkitContainerRef} />
+            <div className="flex flex-col gap-4">
+              <label htmlFor="verification-level" className="razer-label">
+                Verification Level
+              </label>
+              <select
+                id="verification-level"
+                className="razer-select rounded-md"
+                value={verificationLevel}
+                onChange={(e) =>
+                  setVerificationLevel(e.target.value as VerificationLevel)
+                }
+              >
+                <option value={VerificationLevel.Orb}>Orb</option>
+                <option value={VerificationLevel.Device}>Device</option>
+              </select>
+            </div>
 
-          {/* Adding a manual button in case automatic initialization doesn't work */}
-          <button
-            onClick={() => {
-              if (window.IDKit) {
-                window.IDKit.open();
-              } else {
-                alert("IDKit is not initialized yet");
-              }
-            }}
-            className="mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm"
-          >
-            Verify with World ID
-          </button>
+            <div className="flex flex-col items-center mt-4 rounded-lg">
+              <div
+                id="idkit-container"
+                ref={idkitContainerRef}
+                className="rounded-lg bg-red-300"
+              />
+
+              <button
+                onClick={() => {
+                  if (window.IDKit) {
+                    window.IDKit.open();
+                  } else {
+                    alert("IDKit is not initialized yet");
+                  }
+                }}
+                className="razer-button mt-6 rounded-md"
+              >
+                Verify with World ID
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
