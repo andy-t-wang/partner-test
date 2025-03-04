@@ -3,19 +3,243 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --razer-green: #44d62c;
+  --razer-black: #111111;
+  --background: var(--razer-black);
+  --foreground: #ffffff;
+  --laser-color: #44d62c;
+  --laser-glow: rgba(68, 214, 44, 0.4);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes animatedBorder {
+  0% {
+    border-image-source: linear-gradient(
+      to right,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  12.5% {
+    border-image-source: linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  25% {
+    border-image-source: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  37.5% {
+    border-image-source: linear-gradient(
+      225deg,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  50% {
+    border-image-source: linear-gradient(
+      to left,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  62.5% {
+    border-image-source: linear-gradient(
+      315deg,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  75% {
+    border-image-source: linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  87.5% {
+    border-image-source: linear-gradient(
+      45deg,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+  100% {
+    border-image-source: linear-gradient(
+      to right,
+      transparent 0%,
+      transparent 5%,
+      var(--laser-color) 15%,
+      rgba(68, 214, 44, 0.5) 25%,
+      rgba(68, 214, 44, 0.1) 35%,
+      transparent 45%,
+      transparent 100%
+    );
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
   }
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--razer-black);
+  font-family: "Roboto", Arial, sans-serif;
+  background-image: radial-gradient(
+      circle at 50% 50%,
+      rgba(68, 214, 44, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(68, 214, 44, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(68, 214, 44, 0.1) 0%,
+      transparent 50%
+    );
+}
+
+.razer-container {
+  position: relative;
+  background: rgba(17, 17, 17, 0.95);
+  backdrop-filter: blur(10px);
+  border: 3px solid transparent;
+  border-image-slice: 1;
+  animation: animatedBorder 4s linear infinite;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding: 1.5rem !important;
+}
+
+/* Add a pseudo-element to maintain rounded corners */
+.razer-container::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 12px;
+  z-index: -1;
+  box-shadow: 0 0 8px var(--laser-glow);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Add an additional pseudo-element for a subtle background glow */
+.razer-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.razer-button {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(68, 214, 44, 0.8) 30%,
+    rgba(68, 214, 44, 0.8) 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  color: var(--razer-black);
+  padding: 0.75rem 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(68, 214, 44, 0.3);
+  background-clip: padding-box;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+}
+
+.razer-button:hover {
+  background: var(--razer-green);
+  animation: none;
+  transform: scale(1.05);
+  box-shadow: 0 0 2px var(--laser-color), 0 0 4px var(--laser-glow),
+    inset 0 0 2px var(--laser-color);
+  border-color: var(--laser-color);
+}
+
+.razer-select {
+  background: var(--razer-black);
+  color: var(--razer-green);
+  border: 1px solid var(--razer-green);
+  padding: 0.5rem 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+}
+
+.razer-select:focus {
+  box-shadow: 0 0 1px var(--laser-color), 0 0 2px var(--laser-glow);
+}
+
+.razer-label {
+  color: var(--razer-green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
 }
