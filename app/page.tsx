@@ -99,7 +99,7 @@ export default function Home() {
       const data = await response.json();
       if (data.success) {
         console.log("User verified");
-        alert("Proof verified");
+        alert("Account Linked");
       } else {
         console.log("User not verified");
         alert("Proof not verified");
