@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { addWebhookEvent } from "../webhook-events/route";
 
 const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAEfyfJbqviO6v
@@ -42,8 +43,13 @@ F7F1pIA0385/RvWTnmYiyMza
 // sQIDAQAB
 // -----END PUBLIC KEY-----`;
 
+// Define types for logger to fix linter errors
+interface LogData {
+  [key: string]: unknown;
+}
+
 const logger = {
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: LogData) => {
     const logEntry = {
       level: "info",
       timestamp: new Date().toISOString(),
@@ -52,22 +58,25 @@ const logger = {
     };
     console.log(JSON.stringify(logEntry));
   },
-  error: (message: string, error?: any) => {
+  error: (message: string, error?: Error | LogData) => {
     const logEntry = {
       level: "error",
       timestamp: new Date().toISOString(),
       message,
       ...(error && {
-        error: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        },
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              }
+            : error,
       }),
     };
     console.error(JSON.stringify(logEntry));
   },
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: LogData) => {
     const logEntry = {
       level: "warn",
       timestamp: new Date().toISOString(),
@@ -107,6 +116,8 @@ export async function POST(req: Request) {
   const contentType = req.headers.get("content-type");
   if (contentType !== "application/json") {
     logger.warn("Invalid content type received", { contentType });
+    // Add a failed webhook event
+    addWebhookEvent(false, { error: "Invalid content type" });
     return NextResponse.json(
       { error: "Invalid content type. Expected application/json" },
       { status: 400 }
@@ -129,10 +140,20 @@ export async function POST(req: Request) {
 
     logger.info("Webhook payload processed successfully", { payload: result });
 
+    // Add a successful webhook event
+    addWebhookEvent(true, { payload: result });
+
     // Return a success response
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    logger.error("Error processing webhook", error);
+  } catch (error: unknown) {
+    const typedError = error as Error;
+    logger.error("Error processing webhook", typedError);
+
+    // Add a failed webhook event
+    addWebhookEvent(false, {
+      error: typedError.message || "Unknown error",
+    });
+
     return NextResponse.json(
       { error: "Failed to process webhook payload" },
       { status: 500 }

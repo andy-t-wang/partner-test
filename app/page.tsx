@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
+import WebhookEvents from "./components/WebhookEvents";
 
 // Define VerificationLevel enum since we're no longer importing it
 enum VerificationLevel {
@@ -161,6 +162,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Add the WebhookEvents component */}
+        <WebhookEvents />
       </main>
     </div>
   );
