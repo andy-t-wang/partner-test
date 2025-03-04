@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  console.log("here");
+  console.log("received proof");
   const body = await req.json();
   const { proof, action, signal } = body;
   console.log(proof, action, signal);

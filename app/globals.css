@@ -2,20 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+    --primary: #44d62c;
+    --primary-hover: #7dfc65;
+    --secondary: #1a1a1a;
+    --border: #333333;
+    --success: #44d62c;
+    --card-bg: #0c0c0c;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --header-bg: #000000;
+    --input-bg: #1a1a1a;
+    --amber: #ffb400;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  
+  .btn {
+    @apply px-6 py-3 rounded-none font-medium transition-all duration-200 shadow-sm;
+  }
+  
+  .btn-primary {
+    @apply bg-[color:var(--primary)] text-black hover:bg-[color:var(--primary-hover)];
+  }
+  
+  .btn-outline {
+    @apply border border-[color:var(--primary)] text-[color:var(--primary)] hover:bg-[color:var(--primary)] hover:text-black;
+  }
+  
+  .card {
+    @apply bg-[color:var(--card-bg)] rounded-none shadow-lg border border-[color:var(--border)] p-6;
+  }
+  
+  .heading {
+    @apply font-bold text-3xl md:text-4xl mb-4;
+  }
+  
+  .subheading {
+    @apply text-lg opacity-80 max-w-2xl;
+  }
+  
+  .hover-opacity {
+    @apply hover:opacity-70 transition-opacity;
+  }
+  
+  select,
+  input {
+    @apply bg-[color:var(--input-bg)] border border-[color:var(--border)] rounded-none p-3 text-white outline-none focus:border-[color:var(--primary)];
 }
