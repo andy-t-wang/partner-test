@@ -42,6 +42,7 @@ interface IDKitConfig {
   action_description: string;
   show_modal: boolean;
   container_id: string;
+  disable_default_modal_behavior: boolean;
   partner: boolean;
   verification_level: string;
   handleVerify: (response: IDKitVerifyResponse) => boolean | Promise<boolean>;
@@ -70,6 +71,7 @@ export default function Home() {
           action_description: "Verify with World ID",
           show_modal: true,
           container_id: "idkit-container",
+          disable_default_modal_behavior: true,
           partner: true,
           verification_level: verificationLevel.toString().toLowerCase(),
           handleVerify: (response: IDKitVerifyResponse) => {
