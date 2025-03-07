@@ -2,11 +2,18 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getFilteredWebhookEvents, getWebhookEvents } from "./utils";
 
-// GET endpoint to retrieve webhook events using Server-Sent Events
+// GET endpoint to retrieve webhook events using Server-Sent Events or regular JSON
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const lastEventTime = searchParams.get("lastEventTime");
+  const format = searchParams.get("format");
 
+  // If format=json, return regular JSON response instead of SSE
+  if (format === "json") {
+    return NextResponse.json({ events: getWebhookEvents() });
+  }
+
+  // Otherwise, proceed with SSE
   // Set headers for SSE
   const headers = {
     "Content-Type": "text/event-stream",
@@ -47,7 +54,7 @@ export async function GET(req: Request) {
   return new Response(stream, { headers });
 }
 
-// HEAD endpoint to retrieve the latest webhook events without SSE
+// HEAD endpoint for HTTP HEAD requests
 export async function HEAD() {
-  return NextResponse.json({ events: getWebhookEvents() });
+  return new Response(null, { status: 200 });
 }
