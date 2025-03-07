@@ -1,26 +1,6 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
-
-// Simple in-memory event store (will be lost on server restart)
-// In a production app, you might use Redis or another solution
-let webhookEvents: { timestamp: string; success: boolean; data?: any }[] = [];
-
-// Function to add a new webhook event
-export function addWebhookEvent(success: boolean, data?: any) {
-  const event = {
-    timestamp: new Date().toISOString(),
-    success,
-    data,
-  };
-  webhookEvents.unshift(event); // Add to beginning of array
-
-  // Keep only the last 10 events
-  if (webhookEvents.length > 10) {
-    webhookEvents = webhookEvents.slice(0, 10);
-  }
-
-  return event;
-}
+import { getFilteredWebhookEvents, getWebhookEvents } from "./utils";
 
 // GET endpoint to retrieve webhook events using Server-Sent Events
 export async function GET(req: Request) {
@@ -38,9 +18,7 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     start(controller) {
       // Send initial events
-      const filteredEvents = lastEventTime
-        ? webhookEvents.filter((event) => event.timestamp > lastEventTime)
-        : webhookEvents;
+      const filteredEvents = getFilteredWebhookEvents(lastEventTime);
 
       if (filteredEvents.length > 0) {
         const data = encoder.encode(
@@ -69,7 +47,7 @@ export async function GET(req: Request) {
   return new Response(stream, { headers });
 }
 
-// GET endpoint to retrieve the latest webhook events without SSE
-export async function HEAD(req: Request) {
-  return NextResponse.json({ events: webhookEvents });
+// HEAD endpoint to retrieve the latest webhook events without SSE
+export async function HEAD() {
+  return NextResponse.json({ events: getWebhookEvents() });
 }
