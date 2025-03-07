@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { addWebhookEvent } from "../webhook-events/route";
+import { addWebhookEvent } from "../webhook-events/utils";
 
 const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAEfyfJbqviO6v

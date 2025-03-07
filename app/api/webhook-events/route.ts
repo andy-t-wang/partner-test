@@ -1,32 +1,19 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
+import { getFilteredWebhookEvents, getWebhookEvents } from "./utils";
 
-// Simple in-memory event store (will be lost on server restart)
-// In a production app, you might use Redis or another solution
-let webhookEvents: { timestamp: string; success: boolean; data?: any }[] = [];
-
-// Function to add a new webhook event
-export function addWebhookEvent(success: boolean, data?: any) {
-  const event = {
-    timestamp: new Date().toISOString(),
-    success,
-    data,
-  };
-  webhookEvents.unshift(event); // Add to beginning of array
-
-  // Keep only the last 10 events
-  if (webhookEvents.length > 10) {
-    webhookEvents = webhookEvents.slice(0, 10);
-  }
-
-  return event;
-}
-
-// GET endpoint to retrieve webhook events using Server-Sent Events
+// GET endpoint to retrieve webhook events using Server-Sent Events or regular JSON
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const lastEventTime = searchParams.get("lastEventTime");
+  const format = searchParams.get("format");
 
+  // If format=json, return regular JSON response instead of SSE
+  if (format === "json") {
+    return NextResponse.json({ events: getWebhookEvents() });
+  }
+
+  // Otherwise, proceed with SSE
   // Set headers for SSE
   const headers = {
     "Content-Type": "text/event-stream",
@@ -38,9 +25,7 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     start(controller) {
       // Send initial events
-      const filteredEvents = lastEventTime
-        ? webhookEvents.filter((event) => event.timestamp > lastEventTime)
-        : webhookEvents;
+      const filteredEvents = getFilteredWebhookEvents(lastEventTime);
 
       if (filteredEvents.length > 0) {
         const data = encoder.encode(
@@ -69,7 +54,7 @@ export async function GET(req: Request) {
   return new Response(stream, { headers });
 }
 
-// GET endpoint to retrieve the latest webhook events without SSE
-export async function HEAD(req: Request) {
-  return NextResponse.json({ events: webhookEvents });
+// HEAD endpoint for HTTP HEAD requests
+export async function HEAD() {
+  return new Response(null, { status: 200 });
 }

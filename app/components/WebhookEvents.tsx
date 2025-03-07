@@ -24,7 +24,7 @@ export default function WebhookEvents() {
   const fetchInitialEvents = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/webhook-events", { method: "HEAD" });
+      const response = await fetch("/api/webhook-events?format=json");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
