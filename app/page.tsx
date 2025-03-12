@@ -86,11 +86,9 @@ export default function Home() {
           partner: true,
           verification_level: verificationLevel.toString().toLowerCase(),
           handleVerify: (response: IDKitVerifyResponse) => {
-            // verify the IDKit proof, throw an error to show the error screen
             console.log("Verifying:", response);
-            // Store the response in the ref for later use
             verificationResponseRef.current = response;
-            return true; // Return true to proceed with success, or throw an error to show error screen
+            return true;
           },
           onSuccess: onSuccess,
         });
@@ -109,18 +107,14 @@ export default function Home() {
 
   const onSuccess = async (result: ISuccessResult) => {
     try {
-      // Use the stored verification response if available, but ensure all required fields are present
       const dataToSend = {
         ...(verificationResponseRef.current || {}),
         ...result,
-        // Explicitly include verification_level to ensure it's present
         verification_level: verificationLevel.toString().toLowerCase(),
-        // Explicitly include action and signal to ensure they're present
-        action: "razer-test", // Must match the action used in IDKit initialization
-        signal: signalId // Use the same signalId that was used for initialization
+        action: "razer-test",
+        signal: signalId
       };
 
-      // Show a loading message or indicator
       console.log("Verifying proof with server...");
 
       const response = await fetch("/api/verify", {
@@ -133,7 +127,6 @@ export default function Home() {
 
       const data = await response.json();
       if (data.success) {
-        // Only show success message when the server verification succeeds
         console.log("User verified successfully by server");
         alert("Account Linked");
       } else {
