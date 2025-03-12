@@ -4,11 +4,6 @@ import { ISuccessResult, verifyCloudProof } from "@worldcoin/minikit-js";
 
 export async function POST(req: Request) {
   const body = await req.json();
-
-  // Log the entire request body with field names
-  console.log("Received verification request with payload:", JSON.stringify(body, null, 2));
-
-  // Make sure we're passing the action and signal from the body
   const result = await verifyProof(
     body,
     body.action,
