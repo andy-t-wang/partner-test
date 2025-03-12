@@ -61,12 +61,9 @@ export default function Home() {
   );
   const [signalId, setSignalId] = useState<string>("");
   const idkitContainerRef = useRef<HTMLDivElement>(null);
-  // Add a ref to store the verification response
   const verificationResponseRef = useRef<IDKitVerifyResponse | null>(null);
 
-  // Generate a UUID for the signal when component mounts
   useEffect(() => {
-    // Use crypto.randomUUID() to generate a UUID
     if (typeof window !== 'undefined' && window.crypto) {
       setSignalId(crypto.randomUUID());
     }
