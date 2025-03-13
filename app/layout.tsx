@@ -20,7 +20,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <Script
-          src="https://unpkg.com/staging-idkit-standalone@2.0.1/build/index.global.js"
+          src="https://unpkg.com/@worldcoin/idkit-standalone@2.0.1/build/index.global.js"
           strategy="beforeInteractive"
         />
       </head>
