@@ -28,21 +28,29 @@ const verifyProof = async (payload: ISuccessResult, action: string, signal: stri
     const app_id = 'app_staging_4cf2b038f87e0ebdf328ac3b60ded270';
     const stagingEndpoint = `https://staging-developer.worldcoin.org/api/v2/verify/${app_id}`;
 
+    const proof = {
+        proof: payload.proof,
+        merkle_root: payload.merkle_root,
+        nullifier_hash: payload.nullifier_hash,
+        verification_level: payload.verification_level
+    };
+
     // Unpack the packed proof from its ABI-encoded hex string to a nested proof structure
     try {
-        const unpackedProof = decodeProof(payload.proof);
+        const unpackedProof = decodeProof(proof.proof);
         // Replace the packed proof with the unpacked (nested) proof in the payload
-        payload.proof = JSON.stringify(unpackedProof);
+        proof.proof = JSON.stringify(unpackedProof);
     } catch (error) {
         console.error('Error unpacking proof', error);
         throw error;
     }
 
-    console.log("Verifying payload" + JSON.stringify(payload, null, 2));
+    console.log("Verifying payload" + JSON.stringify({proof, app_id, action, signal}, null, 2));
 
     try {
+
         verifyResponse = await verifyCloudProof(
-            payload,
+            proof,
             app_id,
             action,
             signal,
